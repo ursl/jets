@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Histogram Visualization</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Jet Playground</h1>
+            <div class="controls">
+                <button id="generateData">Generate Random Data (No Jets)</button>
+                <button id="toggle3D">Toggle 3D View</button>
+                <button id="resetView">Reset 3D View</button>
+                <label for="gridSize">Grid Size:</label>
+                <input type="range" id="gridSize" min="5" max="50" value="20">
+                <span id="gridSizeValue">20</span>
+                <label for="viewAngle">View Angle:</label>
+                <input type="range" id="viewAngle" min="0" max="45" value="22">
+                <span id="viewAngleValue">22°</span>
+            </div>
+        </header>
+        
+        <div class="jet-controls">
+            <h2>Jet Injection</h2>
+            <div class="jet-input-section">
+                <label for="numJets">Number of Jets:</label>
+                <input type="number" id="numJets" min="1" max="10" value="2">
+                <button id="addJet">Add Jet(s)</button>
+                <button id="clearJets">Clear All Jets</button>
+            </div>
+            <div id="jetList" class="jet-list"></div>
+        </div>
+        
+        <main>
+            <div class="visualization-container">
+                <div class="canvas-wrapper">
+                    <canvas id="histogramCanvas" width="800" height="600"></canvas>
+                    <div class="axis-label x-axis">Azimuth φ (rad)</div>
+                    <div class="axis-label y-axis">Rapidity y</div>
+                </div>
+                <div id="tooltip" class="tooltip"></div>
+            </div>
+            
+            <div class="info-panel">
+                <h3>Data Information</h3>
+                <div id="dataStats">
+                    <p>Total bins: <span id="totalBins">400</span></p>
+                    <p>Max value: <span id="maxValue">0</span></p>
+                    <p>Min value: <span id="minValue">0</span></p>
+                    <p><strong>Physics Coordinates:</strong></p>
+                    <p>φ range: -π to π rad</p>
+                    <p>y range: -4 to 4</p>
+                    <p>Hovered bin: <span id="hoveredBin">None</span></p>
+                </div>
+                
+                <h3>3D Controls</h3>
+                <div id="controls3D">
+                    <p>Rotation Z: <span id="rotationZ">0.00</span> rad</p>
+                    <p>View Angle: <span id="viewAngleDisplay">22°</span></p>
+                    <p>Zoom: <span id="zoomLevel">1.00</span></p>
+                    <p><small>Drag horizontally to rotate • Scroll to zoom • Adjust view angle</small></p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
