@@ -96,6 +96,9 @@ class Histogram2D {
         // Touch events for mobile devices
         this.setupTouchEvents();
         
+        // Add touch events to the entire visualization container for better capture
+        this.setupContainerTouchEvents();
+        
         // Generate data button
         document.getElementById('generateData').addEventListener('click', () => {
             if (this.jets.length === 0) {
@@ -166,6 +169,7 @@ class Histogram2D {
         this.canvas.addEventListener('touchstart', (e) => {
             if (this.is3D) {
                 e.preventDefault();
+                e.stopPropagation();
                 const touches = e.touches;
                 
                 if (touches.length === 1) {
@@ -199,12 +203,13 @@ class Histogram2D {
                     this.touchState.lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
                 }
             }
-        });
+        }, { passive: false });
         
         // Touch move
         this.canvas.addEventListener('touchmove', (e) => {
             if (this.is3D && this.touchState.isTouching) {
                 e.preventDefault();
+                e.stopPropagation();
                 const touches = e.touches;
                 
                 if (touches.length === 1 && !this.touchState.isPinching) {
@@ -244,25 +249,60 @@ class Histogram2D {
                     this.draw();
                 }
             }
-        });
+        }, { passive: false });
         
         // Touch end
         this.canvas.addEventListener('touchend', (e) => {
             if (this.is3D) {
                 e.preventDefault();
+                e.stopPropagation();
                 this.touchState.isTouching = false;
                 this.touchState.isPinching = false;
             }
-        });
+        }, { passive: false });
         
         // Touch cancel
         this.canvas.addEventListener('touchcancel', (e) => {
             if (this.is3D) {
                 e.preventDefault();
+                e.stopPropagation();
                 this.touchState.isTouching = false;
                 this.touchState.isPinching = false;
             }
-        });
+        }, { passive: false });
+    }
+    
+    setupContainerTouchEvents() {
+        const container = document.querySelector('.visualization-container');
+        
+        // Prevent default touch behaviors on the entire container
+        container.addEventListener('touchstart', (e) => {
+            if (this.is3D) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, { passive: false });
+        
+        container.addEventListener('touchmove', (e) => {
+            if (this.is3D) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, { passive: false });
+        
+        container.addEventListener('touchend', (e) => {
+            if (this.is3D) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, { passive: false });
+        
+        container.addEventListener('touchcancel', (e) => {
+            if (this.is3D) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, { passive: false });
     }
     
     initializeEmptyHistogram() {
