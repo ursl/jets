@@ -4,19 +4,19 @@ A modern, interactive web-based visualization tool for displaying 2D histograms 
 
 ## Features
 
-### 🎯 **Interactive Visualization**
+###  **Interactive Visualization**
 - **2D Histogram View**: Traditional grid-based visualization with color-coded energy bins
 - **3D Histogram View**: Rotatable 3D perspective with solid bars and proper depth sorting
 - **Real-time Updates**: Instant visualization updates when jet parameters change
 - **Zoom and Pan**: Interactive controls for detailed analysis
 
-### 🔬 **Physics Simulation**
+###  **Physics Simulation**
 - **Jet Injection**: Add multiple jets with customizable energy, rapidity, and azimuth
 - **Fragmentation Model**: Realistic particle distribution using exponential energy fall-off
 - **Constituent Control**: Adjustable number of particles per jet (1-100)
 - **Energy Conservation**: Proper energy distribution ensuring conservation laws
 
-### 🎮 **User Interface**
+###  **User Interface**
 - **Physics Coordinates**: Uses standard rapidity (y) and azimuth (φ) coordinate system
 - **Interactive Controls**: Real-time parameter adjustment with immediate feedback
 - **Hover Information**: Detailed tooltips showing physics quantities and bin values
@@ -81,42 +81,6 @@ A modern, interactive web-based visualization tool for displaying 2D histograms 
 - **CSS3**: Modern styling with gradients and animations
 - **Web Standards**: Pure web technologies, no frameworks
 
-### Browser Compatibility
-- Chrome 60+
-- Firefox 55+
-- Safari 12+
-- Edge 79+
-
-## File Structure
-
-```
-jets/
-├── index.html          # Main application file
-├── styles.css          # Styling and layout
-├── script.js           # Core application logic
-└── README.md           # This file
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues, feature requests, or pull requests.
-
-### Development Setup
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## Acknowledgments
-
-- Inspired by high-energy physics detector visualization tools
-- Built for educational and research purposes
-- Suitable for physics analysis and presentations
 
 ## Contact
 
@@ -124,4 +88,4 @@ For questions or suggestions, please open an issue on GitHub.
 
 ---
 
-**Note**: This is a simplified physics simulation for educational purposes. For real physics analysis, use dedicated tools like ROOT, Matplotlib, or specialized detector software.
+**Note**: This is a simplified physics simulation for educational purposes (and exercising cursor). If you use this for anything real, you should be fired from your job (in case you have one).
