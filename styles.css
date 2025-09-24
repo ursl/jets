@@ -302,4 +302,53 @@ main {
         width: 100%;
         height: auto;
     }
+    
+    /* Mobile-specific improvements */
+    .container {
+        padding: 10px;
+    }
+    
+    header {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+    
+    .jet-item {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .jet-params {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .jet-actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+    
+    /* Touch-friendly button sizes */
+    button {
+        padding: 15px 25px;
+        font-size: 16px;
+        min-height: 44px; /* iOS recommended touch target size */
+    }
+    
+    /* Prevent text selection during touch interactions */
+    #histogramCanvas {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Improve touch responsiveness */
+    .visualization-container {
+        touch-action: none; /* Prevent default touch behaviors */
+    }
 }

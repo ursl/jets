@@ -14,6 +14,14 @@ class Histogram2D {
         this.isDragging = false;
         this.lastMousePos = { x: 0, y: 0 };
         
+        // Touch state for mobile devices
+        this.touchState = {
+            isTouching: false,
+            lastTouchPos: { x: 0, y: 0 },
+            lastTouchDistance: 0,
+            isPinching: false
+        };
+        
         // Fixed inclined viewpoint (looking down at an angle)
         this.viewAngle = Math.PI / 8; // 22.5 degrees inclination (less steep)
         
@@ -85,6 +93,9 @@ class Histogram2D {
             }
         });
         
+        // Touch events for mobile devices
+        this.setupTouchEvents();
+        
         // Generate data button
         document.getElementById('generateData').addEventListener('click', () => {
             if (this.jets.length === 0) {
@@ -147,6 +158,110 @@ class Histogram2D {
         
         document.getElementById('clearJets').addEventListener('click', () => {
             this.clearJets();
+        });
+    }
+    
+    setupTouchEvents() {
+        // Touch start
+        this.canvas.addEventListener('touchstart', (e) => {
+            if (this.is3D) {
+                e.preventDefault();
+                const touches = e.touches;
+                
+                if (touches.length === 1) {
+                    // Single touch - rotation
+                    const touch = touches[0];
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.touchState.isTouching = true;
+                    this.touchState.lastTouchPos = {
+                        x: touch.clientX - rect.left,
+                        y: touch.clientY - rect.top
+                    };
+                    this.touchState.isPinching = false;
+                } else if (touches.length === 2) {
+                    // Two touches - pinch to zoom
+                    const touch1 = touches[0];
+                    const touch2 = touches[1];
+                    const rect = this.canvas.getBoundingClientRect();
+                    
+                    this.touchState.isTouching = true;
+                    this.touchState.isPinching = true;
+                    
+                    // Calculate center point
+                    const centerX = (touch1.clientX + touch2.clientX) / 2 - rect.left;
+                    const centerY = (touch1.clientY + touch2.clientY) / 2 - rect.top;
+                    
+                    this.touchState.lastTouchPos = { x: centerX, y: centerY };
+                    
+                    // Calculate initial distance
+                    const dx = touch1.clientX - touch2.clientX;
+                    const dy = touch1.clientY - touch2.clientY;
+                    this.touchState.lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+                }
+            }
+        });
+        
+        // Touch move
+        this.canvas.addEventListener('touchmove', (e) => {
+            if (this.is3D && this.touchState.isTouching) {
+                e.preventDefault();
+                const touches = e.touches;
+                
+                if (touches.length === 1 && !this.touchState.isPinching) {
+                    // Single touch rotation
+                    const touch = touches[0];
+                    const rect = this.canvas.getBoundingClientRect();
+                    const currentPos = {
+                        x: touch.clientX - rect.left,
+                        y: touch.clientY - rect.top
+                    };
+                    
+                    const deltaX = currentPos.x - this.touchState.lastTouchPos.x;
+                    
+                    // Rotate around Z-axis
+                    this.rotationZ += deltaX * 0.01;
+                    
+                    this.touchState.lastTouchPos = currentPos;
+                    this.update3DControls();
+                    this.draw();
+                } else if (touches.length === 2 && this.touchState.isPinching) {
+                    // Two touches - pinch to zoom
+                    const touch1 = touches[0];
+                    const touch2 = touches[1];
+                    
+                    // Calculate current distance
+                    const dx = touch1.clientX - touch2.clientX;
+                    const dy = touch1.clientY - touch2.clientY;
+                    const currentDistance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Calculate zoom factor
+                    const zoomFactor = currentDistance / this.touchState.lastTouchDistance;
+                    this.zoom *= zoomFactor;
+                    this.zoom = Math.max(0.3, Math.min(2, this.zoom));
+                    
+                    this.touchState.lastTouchDistance = currentDistance;
+                    this.update3DControls();
+                    this.draw();
+                }
+            }
+        });
+        
+        // Touch end
+        this.canvas.addEventListener('touchend', (e) => {
+            if (this.is3D) {
+                e.preventDefault();
+                this.touchState.isTouching = false;
+                this.touchState.isPinching = false;
+            }
+        });
+        
+        // Touch cancel
+        this.canvas.addEventListener('touchcancel', (e) => {
+            if (this.is3D) {
+                e.preventDefault();
+                this.touchState.isTouching = false;
+                this.touchState.isPinching = false;
+            }
         });
     }
     
