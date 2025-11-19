@@ -26,12 +26,16 @@ class Histogram2D {
         this.viewAngle = Math.PI / 8; // 22.5 degrees inclination (less steep)
         
         // Physics parameters
-        this.rapidityRange = [-4, 4]; // Rapidity range
+        this.rapidityRange = [-3.15, 3.15]; // Rapidity range
         this.phiRange = [-Math.PI, Math.PI]; // Azimuth range
         
         // Jet data
         this.jets = [];
         this.jetCounter = 0;
+        
+        // Found jets from algorithms
+        this.foundJets = [];
+        this.currentConeRadius = 0.8; // Default cone radius
         
         this.setupEventListeners();
         this.initializeEmptyHistogram();
@@ -154,13 +158,34 @@ class Histogram2D {
             this.draw();
         });
         
-        // Jet controls
-        document.getElementById('addJet').addEventListener('click', () => {
-            this.addJet();
+        // Collapsible Data Information section
+        const dataInfoHeader = document.getElementById('dataInfoHeader');
+        const dataInfoSection = dataInfoHeader.closest('.collapsible-section');
+        dataInfoHeader.addEventListener('click', () => {
+            dataInfoSection.classList.toggle('collapsed');
         });
         
-        document.getElementById('clearJets').addEventListener('click', () => {
-            this.clearJets();
+        // Collapsible Jet Algorithms section
+        const jetAlgorithmsHeader = document.getElementById('jetAlgorithmsHeader');
+        const jetAlgorithmsSection = jetAlgorithmsHeader.closest('.collapsible-section');
+        jetAlgorithmsHeader.addEventListener('click', () => {
+            jetAlgorithmsSection.classList.toggle('collapsed');
+        });
+        
+        // Collapsible 3D Controls section
+        const controls3DHeader = document.getElementById('controls3DHeader');
+        const controls3DSection = controls3DHeader.closest('.collapsible-section');
+        controls3DHeader.addEventListener('click', () => {
+            controls3DSection.classList.toggle('collapsed');
+        });
+        
+        // Jet Algorithm buttons
+        document.getElementById('coneAlgorithm').addEventListener('click', () => {
+            this.runConeAlgorithm();
+        });
+        
+        document.getElementById('ktAlgorithm').addEventListener('click', () => {
+            this.runKtAlgorithm();
         });
     }
     
@@ -313,32 +338,97 @@ class Histogram2D {
                 this.data[i][j] = 0;
             }
         }
+        this.foundJets = []; // Clear found jets
         this.updateStats();
     }
     
     generateRandomData() {
+        // Initialize empty grid
         this.data = [];
         for (let i = 0; i < this.gridSize; i++) {
             this.data[i] = [];
             for (let j = 0; j < this.gridSize; j++) {
-                // Generate random values with some clustering
-                const distance = Math.sqrt((i - this.gridSize/2)**2 + (j - this.gridSize/2)**2);
-                const clusterFactor = Math.exp(-distance / (this.gridSize/4));
-                const randomValue = Math.random() * clusterFactor * 100;
-                this.data[i][j] = randomValue;
+                this.data[i][j] = 0;
             }
         }
+        
+        // Generate 2-4 quasi-jets (similar to jet injection)
+        const numJets = 2 + Math.floor(Math.random() * 3); // 2, 3, or 4
+        
+        for (let jetIdx = 0; jetIdx < numJets; jetIdx++) {
+            // Random jet center in physics coordinates
+            const jetRapidity = this.rapidityRange[0] + Math.random() * (this.rapidityRange[1] - this.rapidityRange[0]);
+            const jetPhi = this.phiRange[0] + Math.random() * (this.phiRange[1] - this.phiRange[0]);
+            
+            // Jet energy similar to injected jets (50-150 GeV)
+            const jetEnergy = 50 + Math.random() * 100;
+            
+            // Number of constituents (similar to jet injection)
+            const numConstituents = Math.max(8, Math.floor(jetEnergy / 2) + Math.floor(Math.random() * 10));
+            
+            // Generate energy fractions using exponential distribution (same as jet injection)
+            const energyFractions = [];
+            let totalFraction = 0;
+            
+            for (let i = 0; i < numConstituents; i++) {
+                // Exponential fall-off with random fluctuations (same as jet injection)
+                const baseFraction = Math.exp(-i * 0.3);
+                const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+                const fraction = baseFraction * randomFactor;
+                energyFractions.push(fraction);
+                totalFraction += fraction;
+            }
+            
+            // Normalize and distribute constituents (same as jet injection)
+            for (let i = 0; i < numConstituents; i++) {
+                const normalizedFraction = energyFractions[i] / totalFraction;
+                const constituentEnergy = jetEnergy * normalizedFraction;
+                
+                // Only add constituents with meaningful energy (> 0.1 GeV)
+                if (constituentEnergy > 0.1) {
+                    // Angular distribution around jet axis (Gaussian, same as jet injection)
+                    const deltaR = Math.sqrt(-2 * Math.log(Math.random())) * 0.3; // R = sqrt(Δy² + Δφ²)
+                    const angle = Math.random() * 2 * Math.PI;
+                    
+                    const deltaY = deltaR * Math.cos(angle);
+                    const deltaPhi = deltaR * Math.sin(angle);
+                    
+                    const constituentRapidity = jetRapidity + deltaY;
+                    const constituentPhi = jetPhi + deltaPhi;
+                    
+                    // Convert to grid coordinates and add to histogram
+                    const gridCoords = this.physicsToGrid(constituentRapidity, constituentPhi);
+                    
+                    if (gridCoords.gridX >= 0 && gridCoords.gridX < this.gridSize && 
+                        gridCoords.gridY >= 0 && gridCoords.gridY < this.gridSize) {
+                        this.data[gridCoords.gridY][gridCoords.gridX] += constituentEnergy;
+                    }
+                }
+            }
+        }
+        
+        // Sprinkle 10-20 low energy particles across the entire plane
+        const numLowEnergy = 10 + Math.floor(Math.random() * 11); // 10-20
+        for (let l = 0; l < numLowEnergy; l++) {
+            const randomRapidity = this.rapidityRange[0] + Math.random() * (this.rapidityRange[1] - this.rapidityRange[0]);
+            const randomPhi = this.phiRange[0] + Math.random() * (this.phiRange[1] - this.phiRange[0]);
+            
+            const gridCoords = this.physicsToGrid(randomRapidity, randomPhi);
+            
+            if (gridCoords.gridX >= 0 && gridCoords.gridX < this.gridSize && 
+                gridCoords.gridY >= 0 && gridCoords.gridY < this.gridSize) {
+                // Low energy: 1-10 GeV
+                this.data[gridCoords.gridY][gridCoords.gridX] += 1 + Math.random() * 9;
+            }
+        }
+        
+        this.foundJets = []; // Clear found jets when generating new data
         this.updateStats();
     }
     
     updateStats() {
-        const flatData = this.data.flat();
-        const maxValue = Math.max(...flatData);
-        const minValue = Math.min(...flatData);
-        
-        document.getElementById('totalBins').textContent = this.gridSize * this.gridSize;
-        document.getElementById('maxValue').textContent = maxValue.toFixed(2);
-        document.getElementById('minValue').textContent = minValue.toFixed(2);
+        // Stats calculation kept for internal use (e.g., maxValue for normalization)
+        // No longer updating removed HTML elements
     }
     
     // Convert grid coordinates to physics coordinates
@@ -410,7 +500,7 @@ class Histogram2D {
                     </div>
                     <div class="jet-param">
                         <label>Rapidity y</label>
-                        <input type="number" value="${jet.rapidity.toFixed(3)}" min="-4" max="4" step="0.001" 
+                        <input type="number" value="${jet.rapidity.toFixed(3)}" min="-3.15" max="3.15" step="0.001" 
                                onchange="histogram.updateJetEnergy(${jet.id}, 'rapidity', this.value)">
                     </div>
                     <div class="jet-param">
@@ -549,6 +639,20 @@ class Histogram2D {
         document.getElementById('zoomLevel').textContent = this.zoom.toFixed(2);
     }
     
+    // Jet Algorithm methods
+    // Note: runConeAlgorithm, normalizePhi, resolveOverlaps, and drawFoundJets2D 
+    // are now defined in cone1.js
+    
+    runKtAlgorithm() {
+        console.log('Running Kt algorithm...');
+        // TODO: Implement Kt jet algorithm
+        // This will identify jets using the Kt clustering algorithm
+        const coneBtn = document.getElementById('coneAlgorithm');
+        const ktBtn = document.getElementById('ktAlgorithm');
+        coneBtn.classList.remove('active');
+        ktBtn.classList.add('active');
+    }
+    
     updateHoveredBin() {
         if (this.is3D) {
             // For 3D mode, find the bar whose top face is closest to the mouse pointer
@@ -601,8 +705,9 @@ class Histogram2D {
             }
         } else {
             // 2D mode - simple grid-based detection
-            const binWidth = this.canvas.width / this.gridSize;
-            const binHeight = this.canvas.height / this.gridSize;
+            const canvasSize = Math.min(this.canvas.width, this.canvas.height);
+            const binWidth = canvasSize / this.gridSize;
+            const binHeight = canvasSize / this.gridSize;
             
             const binX = Math.floor(this.mousePos.x / binWidth);
             const binY = Math.floor(this.mousePos.y / binHeight);
@@ -650,16 +755,11 @@ class Histogram2D {
         tooltip.style.left = tooltipX + 'px';
         tooltip.style.top = tooltipY + 'px';
         tooltip.classList.add('show');
-        
-        // Update info panel with physics coordinates
-        document.getElementById('hoveredBin').innerHTML = 
-            `(${this.hoveredBin.x}, ${this.hoveredBin.y})<br/>φ = ${physics.phi.toFixed(3)} rad<br/>y = ${physics.y.toFixed(3)}<br/>Value = ${this.hoveredBin.value.toFixed(2)}`;
     }
     
     hideTooltip() {
         const tooltip = document.getElementById('tooltip');
         tooltip.classList.remove('show');
-        document.getElementById('hoveredBin').textContent = 'None';
     }
     
     draw() {
@@ -673,10 +773,20 @@ class Histogram2D {
     }
     
     draw2D() {
-        const binWidth = this.canvas.width / this.gridSize;
-        const binHeight = this.canvas.height / this.gridSize;
-        const flatData = this.data.flat();
-        const maxValue = Math.max(...flatData);
+        // Use minimum dimension to ensure square bins
+        const canvasSize = Math.min(this.canvas.width, this.canvas.height);
+        const binWidth = canvasSize / this.gridSize;
+        const binHeight = canvasSize / this.gridSize;
+        
+        // Safely calculate maxValue
+        let maxValue = 1;
+        if (this.data && this.data.length > 0) {
+            const flatData = this.data.flat().filter(v => typeof v === 'number' && !isNaN(v));
+            if (flatData.length > 0) {
+                maxValue = Math.max(...flatData);
+                if (maxValue === 0) maxValue = 1; // Avoid division by zero
+            }
+        }
         
         // Clear canvas with matching background
         const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
@@ -687,13 +797,13 @@ class Histogram2D {
         
         for (let i = 0; i < this.gridSize; i++) {
             for (let j = 0; j < this.gridSize; j++) {
-                const value = this.data[i][j];
+                const value = this.data[i] && this.data[i][j] !== undefined ? this.data[i][j] : 0;
                 
                 // Set color based on value
                 if (value === 0) {
                     this.ctx.fillStyle = 'white';
                 } else {
-                    const normalizedValue = value / maxValue;
+                    const normalizedValue = maxValue > 0 ? value / maxValue : 0;
                     const hue = (1 - normalizedValue) * 240; // Blue to red
                     this.ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
                 }
@@ -711,7 +821,7 @@ class Histogram2D {
             const x = j * binWidth;
             this.ctx.beginPath();
             this.ctx.moveTo(x, 0);
-            this.ctx.lineTo(x, this.canvas.height);
+            this.ctx.lineTo(x, canvasSize);
             this.ctx.stroke();
         }
         
@@ -720,7 +830,7 @@ class Histogram2D {
             const y = i * binHeight;
             this.ctx.beginPath();
             this.ctx.moveTo(0, y);
-            this.ctx.lineTo(this.canvas.width, y);
+            this.ctx.lineTo(canvasSize, y);
             this.ctx.stroke();
         }
         
@@ -733,6 +843,9 @@ class Histogram2D {
             this.ctx.lineWidth = 3;
             this.ctx.strokeRect(x, y, binWidth, binHeight);
         }
+        
+        // Draw found jets (method defined in cone1.js)
+        this.drawFoundJets2D();
     }
     
     // 3D transformation functions
