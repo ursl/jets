@@ -330,6 +330,13 @@ main {
     box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
 }
 
+.parameter-control input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #3498db;
+}
+
 /* Collapsible section */
 .collapsible-section {
     margin-bottom: 20px;
@@ -382,8 +389,8 @@ main {
 }
 
 .algorithm-btn {
-    flex: 1;
-    min-width: 100px;
+    flex: 0 0 auto;
+    width: 120px;
     background: linear-gradient(45deg, #2ecc71, #27ae60);
     color: white;
     border: none;
@@ -394,6 +401,7 @@ main {
     font-weight: 500;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    text-align: center;
 }
 
 .algorithm-btn:hover {

@@ -14,12 +14,6 @@
                 <button id="generateData">Generate Random Data (Quasi-Jets)</button>
                 <button id="toggle3D">Toggle 3D View</button>
                 <button id="resetView">Reset 3D View</button>
-                <label for="gridSize">Grid Size:</label>
-                <input type="range" id="gridSize" min="5" max="50" value="20">
-                <span id="gridSizeValue">20</span>
-                <label for="viewAngle">View Angle:</label>
-                <input type="range" id="viewAngle" min="0" max="45" value="22">
-                <span id="viewAngleValue">22°</span>
                 <label for="cellEnergy">Energy (GeV):</label>
                 <input type="number" id="cellEnergy" min="0" max="1000" step="0.1" value="10.0">
             </div>
@@ -50,6 +44,10 @@
                             <label for="seedThreshold">Seed Threshold (GeV):</label>
                             <input type="number" id="seedThreshold" min="0.1" max="100" step="0.5" value="10.0">
                         </div>
+                        <div class="parameter-control">
+                            <label for="resolveOverlaps">Resolve Overlaps (Cone 1):</label>
+                            <input type="checkbox" id="resolveOverlaps" checked>
+                        </div>
                     </div>
                 </div>
                 
@@ -60,7 +58,8 @@
                     </h3>
                     <div class="collapsible-content">
                         <div class="algorithm-buttons">
-                            <button id="coneAlgorithm" class="algorithm-btn">Cone</button>
+                            <button id="coneAlgorithm" class="algorithm-btn">Cone 1</button>
+                            <button id="cone2Algorithm" class="algorithm-btn">Cone 2</button>
                             <button id="ktAlgorithm" class="algorithm-btn">Kt</button>
                         </div>
                     </div>
@@ -84,6 +83,9 @@
     </div>
     
     <script src="script.js"></script>
+    <script src="jetUtils.js"></script>
     <script src="cone1.js"></script>
+    <script src="cone2.js"></script>
+    <script src="kt.js"></script>
 </body>
 </html>

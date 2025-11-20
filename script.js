@@ -242,28 +242,6 @@ class Histogram2D {
             this.draw();
         });
         
-        // Grid size slider
-        const gridSizeSlider = document.getElementById('gridSize');
-        const gridSizeValue = document.getElementById('gridSizeValue');
-        
-        gridSizeSlider.addEventListener('input', (e) => {
-            this.gridSize = parseInt(e.target.value);
-            gridSizeValue.textContent = this.gridSize;
-            this.generateRandomData();
-            this.draw();
-        });
-        
-        // View angle slider
-        const viewAngleSlider = document.getElementById('viewAngle');
-        const viewAngleValue = document.getElementById('viewAngleValue');
-        
-        viewAngleSlider.addEventListener('input', (e) => {
-            this.viewAngle = (parseInt(e.target.value) * Math.PI) / 180; // Convert degrees to radians
-            viewAngleValue.textContent = e.target.value + '°';
-            this.update3DControls();
-            this.draw();
-        });
-        
         // Collapsible Data Information section
         const dataInfoHeader = document.getElementById('dataInfoHeader');
         const dataInfoSection = dataInfoHeader.closest('.collapsible-section');
@@ -288,6 +266,10 @@ class Histogram2D {
         // Jet Algorithm buttons
         document.getElementById('coneAlgorithm').addEventListener('click', () => {
             this.runConeAlgorithm();
+        });
+        
+        document.getElementById('cone2Algorithm').addEventListener('click', () => {
+            this.runCone2Algorithm();
         });
         
         document.getElementById('ktAlgorithm').addEventListener('click', () => {
@@ -746,18 +728,13 @@ class Histogram2D {
     }
     
     // Jet Algorithm methods
-    // Note: runConeAlgorithm, normalizePhi, resolveOverlaps, and drawFoundJets2D 
-    // are now defined in cone1.js
+    // Note: 
+    // - normalizePhi, resolveOverlaps, and drawFoundJets2D are defined in jetUtils.js
+    // - runConeAlgorithm is defined in cone1.js
+    // - runCone2Algorithm is defined in cone2.js
+    // - runKtAlgorithm is defined in kt.js
     
-    runKtAlgorithm() {
-        console.log('Running Kt algorithm...');
-        // TODO: Implement Kt jet algorithm
-        // This will identify jets using the Kt clustering algorithm
-        const coneBtn = document.getElementById('coneAlgorithm');
-        const ktBtn = document.getElementById('ktAlgorithm');
-        coneBtn.classList.remove('active');
-        ktBtn.classList.add('active');
-    }
+    // Note: runKtAlgorithm is now defined in kt.js
     
     updateHoveredBin() {
         if (this.is3D) {
