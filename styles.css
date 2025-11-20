@@ -82,6 +82,21 @@ input[type="range"] {
     min-width: 30px;
 }
 
+#cellEnergy {
+    width: 80px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    margin: 0 5px;
+}
+
+#cellEnergy:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
 main {
     display: grid;
     grid-template-columns: 1fr 300px;

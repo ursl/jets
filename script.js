@@ -13,6 +13,7 @@ class Histogram2D {
         this.zoom = 1;
         this.isDragging = false;
         this.lastMousePos = { x: 0, y: 0 };
+        this.mouseDownPos = { x: 0, y: 0 }; // Track initial mouse position for click detection
         
         // Touch state for mobile devices
         this.touchState = {
@@ -65,6 +66,10 @@ class Histogram2D {
         
         // Mouse down for 3D rotation
         this.canvas.addEventListener('mousedown', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            this.mouseDownPos.x = e.clientX - rect.left;
+            this.mouseDownPos.y = e.clientY - rect.top;
+            
             if (this.is3D) {
                 this.isDragging = true;
                 this.lastMousePos = { x: this.mousePos.x, y: this.mousePos.y };
@@ -76,6 +81,107 @@ class Histogram2D {
         this.canvas.addEventListener('mouseup', () => {
             this.isDragging = false;
             this.canvas.style.cursor = this.is3D ? 'grab' : 'crosshair';
+        });
+        
+        // Click to add energy to cell
+        this.canvas.addEventListener('click', (e) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            // Check if mouse moved significantly (more than 5 pixels) - indicates drag, not click
+            const moveDistance = Math.sqrt(
+                Math.pow(clickX - this.mouseDownPos.x, 2) + 
+                Math.pow(clickY - this.mouseDownPos.y, 2)
+            );
+            
+            if (moveDistance > 5) {
+                return; // This was a drag, not a click
+            }
+            
+            // Don't handle clicks if dragging in 3D mode
+            if (this.is3D && this.isDragging) {
+                return;
+            }
+            
+            let binX, binY;
+            
+            if (this.is3D) {
+                // For 3D mode, find the bar closest to the click
+                const flatData = this.data.flat();
+                const maxValue = Math.max(...flatData);
+                const scale = Math.min(this.canvas.width, this.canvas.height) * 0.3;
+                
+                let closestBar = null;
+                let minDistance = Infinity;
+                
+                for (let i = 0; i < this.gridSize; i++) {
+                    for (let j = 0; j < this.gridSize; j++) {
+                        const value = this.data[i][j];
+                        const normalizedValue = value / maxValue;
+                        const barHeight = normalizedValue * scale;
+                        
+                        // Calculate 3D positions for bar corners
+                        const baseX = (j - this.gridSize / 2) * scale / this.gridSize;
+                        const baseY = (i - this.gridSize / 2) * scale / this.gridSize;
+                        const baseZ = 0;
+                        
+                        // Project the top face center to 2D
+                        const topCenter = {
+                            x: baseX + scale / (2 * this.gridSize),
+                            y: baseY + scale / (2 * this.gridSize),
+                            z: baseZ + barHeight
+                        };
+                        
+                        const projected = this.project3D(topCenter);
+                        
+                        // Calculate distance from click to top face center
+                        const distance = Math.sqrt(
+                            Math.pow(clickX - projected.x, 2) + 
+                            Math.pow(clickY - projected.y, 2)
+                        );
+                        
+                        if (distance < minDistance && distance < 60) { // 60 pixel threshold
+                            minDistance = distance;
+                            closestBar = { x: j, y: i };
+                        }
+                    }
+                }
+                
+                if (closestBar) {
+                    binX = closestBar.x;
+                    binY = closestBar.y;
+                } else {
+                    return; // No bar found
+                }
+            } else {
+                // 2D mode - simple grid-based detection
+                const canvasSize = Math.min(this.canvas.width, this.canvas.height);
+                const binWidth = canvasSize / this.gridSize;
+                const binHeight = canvasSize / this.gridSize;
+                
+                binX = Math.floor(clickX / binWidth);
+                binY = Math.floor(clickY / binHeight);
+            }
+            
+            // Check if click is within valid bounds
+            if (binX >= 0 && binX < this.gridSize && binY >= 0 && binY < this.gridSize) {
+                // Get energy value from input field
+                const energyInput = document.getElementById('cellEnergy');
+                const energy = parseFloat(energyInput.value) || 0;
+                
+                // Add energy to the clicked cell
+                if (this.data[binY] && this.data[binY][binX] !== undefined) {
+                    this.data[binY][binX] += energy;
+                    
+                    // Clear found jets since data changed
+                    this.foundJets = [];
+                    
+                    // Redraw histogram
+                    this.updateStats();
+                    this.draw();
+                }
+            }
         });
         
         // Mouse leave to hide tooltip and stop dragging
